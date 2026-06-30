@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: goal-coach-app
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install
+    startCommand: node server/src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/goals.db
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
