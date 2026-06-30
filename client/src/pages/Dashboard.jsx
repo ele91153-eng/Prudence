@@ -3,36 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import { requestNotificationPermission, subscribeToPush } from '../utils/push.js';
 import TaskItem from '../components/TaskItem.jsx';
+import Prudence from '../components/Prudence.jsx';
 
-// Use local date string (YYYY-MM-DD) to avoid UTC offset shifting the day
 function localDateStr() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function formatDate(d) {
-  // Append T12:00:00 so date parsing treats it as local noon, not UTC midnight
-  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+function formatDateDisplay() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
 }
 
-// Parse "9:00 AM" / "10:30 PM" style times to minutes for sorting
-function parseTimeToMinutes(timeStr) {
-  if (!timeStr) return 0;
-  const m = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+function parseTimeToMinutes(t) {
+  if (!t) return 0;
+  const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!m) return 0;
-  let [, h, min, period] = m;
-  h = parseInt(h); min = parseInt(min);
-  if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
-  if (period.toUpperCase() === 'AM' && h === 12) h = 0;
-  return h * 60 + min;
+  let [,h,min,p] = m; h = parseInt(h); min = parseInt(min);
+  if (p.toUpperCase()==='PM' && h!==12) h += 12;
+  if (p.toUpperCase()==='AM' && h===12) h = 0;
+  return h*60+min;
 }
+
+const PRUDENCE_QUOTES = [
+  '"One small step today is still forward."',
+  '"Progress is made one day at a time — you\'re doing it."',
+  '"Rest is part of the plan, not a detour from it."',
+  '"Show up for yourself the way you\'d show up for a friend."',
+  '"Small consistent wins compound into big results."',
+];
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [notifStatus, setNotifStatus] = useState(null);
+  const [notifAsked, setNotifAsked] = useState(false);
   const navigate = useNavigate();
+  const quote = PRUDENCE_QUOTES[new Date().getDay() % PRUDENCE_QUOTES.length];
 
   const load = useCallback(async () => {
     try {
@@ -49,111 +58,166 @@ export default function Dashboard() {
   useEffect(() => { load(); }, [load]);
 
   async function enableNotifications() {
+    setNotifAsked(true);
     const granted = await requestNotificationPermission();
-    if (!granted) { setNotifStatus('denied'); return; }
-    await subscribeToPush();
-    setNotifStatus('enabled');
+    if (granted) await subscribeToPush();
   }
 
   if (loading) return (
-    <div className="loading-screen">
-      <div className="spinner" />
-      <span>Loading your day…</span>
+    <div className="loading-screen" style={{ background: 'var(--canvas)', minHeight: '100dvh' }}>
+      <Prudence size={64} />
+      <span className="fw-600 ink-2">Loading your day…</span>
     </div>
   );
 
   if (error) return (
     <div className="page">
       <div className="error-box mt-4">{error}</div>
+      <button className="btn btn-ghost mt-3" onClick={load}>Try again</button>
     </div>
   );
 
-  const allTasks = data?.goals?.flatMap(g => g.tasks) || [];
-  const hasGoals = data?.goals?.length > 0;
+  const hasGoals = (data?.goals?.length ?? 0) > 0;
+  const allTasks = (data?.goals ?? []).flatMap(g => g.tasks);
+  const doneTasks = allTasks.filter(t => t.status === 'done').length;
+  const showNotifBanner = !notifAsked && 'Notification' in window && Notification.permission === 'default';
 
-  // Notification banner
-  const showNotifBanner = 'Notification' in window && Notification.permission === 'default';
+  // Week dots (M–S relative to today)
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const DAYS = ['S','M','T','W','T','F','S'];
+  const weekDots = DAYS.map((label, i) => {
+    const isToday = i === dayOfWeek;
+    const isPast = i < dayOfWeek;
+    return { label, isToday, isPast };
+  });
 
   return (
-    <div style={{ paddingBottom: 80 }}>
-      <div className="header">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1>Today</h1>
-            <div className="text-sm text-muted mt-2" style={{ marginTop: 2 }}>{formatDate(localDateStr())}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            {data?.goals?.map(g => (
-              <div key={g.goal_id} className="text-xs text-muted" style={{ marginBottom: 2 }}>
-                {g.goal_title}: <span className="text-accent">Day {g.day_number}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div style={{ background: 'var(--canvas)', minHeight: '100dvh', paddingBottom: 'calc(var(--nav-h) + var(--safe-bottom) + 16px)' }}>
+      {/* Ambient glow */}
+      <div style={{ position: 'fixed', top: -90, right: -70, width: 260, height: 260, borderRadius: '50%', background: 'radial-gradient(circle,rgba(236,139,67,.13),transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      <div className="page" style={{ paddingTop: 16 }}>
-        {showNotifBanner && notifStatus !== 'enabled' && (
-          <div className="card mb-4" style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.3)' }}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm">🔔 Enable notifications for task reminders</span>
-              <button className="btn btn-sm btn-primary" onClick={enableNotifications}>Enable</button>
-            </div>
-            {notifStatus === 'denied' && <div className="text-xs text-muted mt-2">Notifications blocked. Enable in browser settings.</div>}
+      {/* Header */}
+      <div style={{ padding: 'calc(var(--safe-top) + 20px) 22px 0', position: 'relative', zIndex: 1 }}>
+        <div className="row-between" style={{ marginBottom: 18 }}>
+          <div className="col gap-1">
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.4px', textTransform: 'uppercase', color: 'var(--ink-3)' }}>
+              {formatDateDisplay()}
+            </span>
+            <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15 }}>
+              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'} ✦
+            </span>
+          </div>
+          <Prudence size={54} />
+        </div>
+
+        {/* Prudence says */}
+        <div className="prudence-says mb-4">
+          <div className="prudence-says-label">
+            <span className="ms ms-fill" style={{ fontSize: 16, color: 'var(--accent-2)' }}>spa</span>
+            Prudence says
+          </div>
+          <p className="prudence-says-quote">{quote}</p>
+        </div>
+
+        {/* Notification banner */}
+        {showNotifBanner && (
+          <div className="card row-between mb-4" style={{ background: 'var(--accent-soft)', borderColor: 'rgba(236,139,67,.25)' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>🔔 Enable task reminders</span>
+            <button className="btn btn-sm btn-primary" onClick={enableNotifications}>Enable</button>
           </div>
         )}
 
-        {!hasGoals ? (
-          <div style={{ textAlign: 'center', paddingTop: 60 }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🎯</div>
-            <h2 style={{ marginBottom: 8 }}>No goals yet</h2>
-            <p className="text-muted" style={{ marginBottom: 24 }}>Create your first goal and get a personalized daily plan.</p>
-            <button className="btn btn-primary" onClick={() => navigate('/goals/new')}>Create a Goal</button>
-          </div>
-        ) : (
-          <>
-            {/* Streak row */}
-            <div className="flex gap-2 mb-4" style={{ flexWrap: 'wrap' }}>
-              {data.goals.map(g => (
-                <div key={g.goal_id} className="badge badge-accent">
-                  🔥 {data.streaks[g.goal_id] || 0} day streak · {g.goal_title.slice(0, 20)}
+        {/* Streak + week card */}
+        {hasGoals && (
+          <div className="card mb-4">
+            <div className="row-between mb-3">
+              <div className="row gap-2">
+                <span className="ms ms-fill" style={{ fontSize: 24, color: 'var(--accent)' }}>local_fire_department</span>
+                <span style={{ fontSize: 19, fontWeight: 800, color: 'var(--ink)' }}>
+                  {Math.max(...Object.values(data.streaks ?? {0:0}))}
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink-2)' }}> day streak</span>
+                </span>
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sage)' }}>
+                {allTasks.length > 0 ? `${doneTasks} of ${allTasks.length} done` : 'on track ✓'}
+              </span>
+            </div>
+            <div className="row-between">
+              {weekDots.map((d, i) => (
+                <div key={i} className="col" style={{ alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, fontWeight: d.isToday ? 700 : 600, color: d.isToday ? 'var(--accent)' : 'var(--ink-3)' }}>
+                    {d.label}
+                  </span>
+                  <div className={`week-dot ${d.isPast ? 'done' : d.isToday ? 'today' : 'empty'}`}>
+                    {d.isPast && <span className="ms ms-fill" style={{ fontSize: 14, color: '#fff' }}>check</span>}
+                    {d.isToday && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />}
+                  </div>
                 </div>
               ))}
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* Per-goal progress */}
+      {/* Tasks */}
+      <div style={{ padding: '0 22px', position: 'relative', zIndex: 1 }}>
+        {!hasGoals ? (
+          <div className="empty-state">
+            <Prudence size={80} style={{ margin: '0 auto 20px' }} />
+            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>No goals yet</h2>
+            <p style={{ color: 'var(--ink-2)', marginBottom: 28, lineHeight: 1.5 }}>
+              Tell Prudence your goal and get a personalized daily coaching plan.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/goals/new')}>
+              Set your first goal
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Goal progress pills */}
             {data.goals.map(g => {
-              const pct = Math.round((1 - g.days_until_deadline / (g.day_number + g.days_until_deadline)) * 100);
+              const pct = Math.round((1 - g.days_until_deadline / Math.max(1, g.day_number + g.days_until_deadline)) * 100);
               return (
                 <div key={g.goal_id} className="card mb-3" onClick={() => navigate(`/goals/${g.goal_id}`)} style={{ cursor: 'pointer' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm" style={{ fontWeight: 600 }}>{g.goal_title}</span>
-                    <span className="badge">{g.days_until_deadline}d left</span>
+                  <div className="row-between mb-2">
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{g.goal_title}</span>
+                    <span className="pill pill-accent">{g.days_until_deadline}d left</span>
                   </div>
-                  <div className="text-xs text-muted mb-2">{g.phase_name}</div>
-                  <div className="progress-bar-track">
-                    <div className="progress-bar-fill" style={{ width: `${Math.max(2, pct)}%` }} />
+                  <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 8 }}>
+                    Day {g.day_number} · {g.phase_name}
                   </div>
+                  <div className="pbar-track"><div className="pbar-fill" style={{ width: `${Math.max(2,pct)}%` }} /></div>
                 </div>
               );
             })}
 
-            {/* All tasks merged */}
-            <div className="section-title mt-4">Today's Schedule</div>
+            <div className="row-between mb-3 mt-4">
+              <span className="section-label" style={{ margin: 0 }}>Today's focus</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-3)' }}>
+                {doneTasks} of {allTasks.length} done
+              </span>
+            </div>
+
             {allTasks.length === 0 ? (
-              <div className="text-muted text-sm">No tasks generated yet. Tap a goal to load today's tasks.</div>
+              <div className="card-soft" style={{ textAlign: 'center', padding: 24 }}>
+                <p style={{ color: 'var(--ink-2)', fontSize: 14 }}>Tap a goal to load today's tasks</p>
+              </div>
             ) : (
-              allTasks
-                .sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time))
-                .map((task, i) => (
-                  <TaskItem
-                    key={`${task.goal_id}-${task.day_id}-${task.index}`}
-                    task={task}
-                    dayId={task.day_id}
-                    goalId={task.goal_id}
-                    onUpdate={load}
-                  />
-                ))
+              <div className="col gap-2">
+                {[...allTasks]
+                  .sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time))
+                  .map(task => (
+                    <TaskItem
+                      key={`${task.goal_id}-${task.day_id}-${task.index}`}
+                      task={task}
+                      dayId={task.day_id}
+                      goalId={task.goal_id}
+                      onUpdate={load}
+                    />
+                  ))
+                }
+              </div>
             )}
           </>
         )}

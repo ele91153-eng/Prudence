@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
+import Prudence from '../components/Prudence.jsx';
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
@@ -11,48 +12,66 @@ export default function Goals() {
     api.get('/goals').then(g => { setGoals(g); setLoading(false); });
   }, []);
 
-  if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
+  if (loading) return (
+    <div className="loading-screen" style={{ background: 'var(--canvas)', minHeight: '100dvh' }}>
+      <div className="spinner" />
+    </div>
+  );
 
   return (
-    <div style={{ paddingBottom: 80 }}>
-      <div className="header">
-        <div className="flex items-center justify-between">
-          <h1>My Goals</h1>
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/goals/new')}>+ New</button>
-        </div>
+    <div style={{ background: 'var(--canvas)', minHeight: '100dvh', paddingBottom: 'calc(var(--nav-h) + var(--safe-bottom) + 16px)' }}>
+      <div className="sticky-header row-between">
+        <h1 style={{ fontSize: 22, fontWeight: 700 }}>My Goals</h1>
+        <button className="btn btn-sm btn-primary" onClick={() => navigate('/goals/new')}>
+          <span className="ms" style={{ fontSize: 18 }}>add</span> New
+        </button>
       </div>
 
-      <div className="page" style={{ paddingTop: 16 }}>
+      <div style={{ padding: '20px 20px 0' }}>
         {goals.length === 0 ? (
-          <div style={{ textAlign: 'center', paddingTop: 60 }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🎯</div>
-            <h2>No active goals</h2>
-            <p className="text-muted mt-2">Create a goal to get started with your AI coach.</p>
-            <button className="btn btn-primary mt-4" onClick={() => navigate('/goals/new')}>Create a Goal</button>
+          <div className="empty-state">
+            <Prudence size={80} style={{ margin: '0 auto 20px' }} />
+            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>No active goals</h2>
+            <p style={{ color: 'var(--ink-2)', marginBottom: 28, lineHeight: 1.5 }}>
+              Let Prudence build you an evidence-based plan for any goal.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/goals/new')}>Create a goal</button>
           </div>
         ) : (
-          goals.map(g => {
-            const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-            const startDate = g.created_at.split('T')[0].split(' ')[0];
-            const dayNum = Math.ceil((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-            const totalDays = dayNum + daysLeft;
-            const pct = Math.round((dayNum / totalDays) * 100);
+          <div className="col gap-3">
+            {goals.map(g => {
+              const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / (1000*60*60*24));
+              const startDate = g.created_at.split('T')[0].split(' ')[0];
+              const dayNum = Math.max(1, Math.ceil((new Date() - new Date(startDate)) / (1000*60*60*24)) + 1);
+              const totalDays = dayNum + Math.max(0, daysLeft);
+              const pct = Math.round((dayNum / totalDays) * 100);
 
-            return (
-              <div key={g.id} className="goal-card" onClick={() => navigate(`/goals/${g.id}`)}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 style={{ flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {g.title}
-                  </h3>
-                  <span className="badge">{daysLeft}d left</span>
+              return (
+                <div
+                  key={g.id}
+                  className="card"
+                  style={{ cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+                  onClick={() => navigate(`/goals/${g.id}`)}
+                >
+                  <div className="row-between mb-2">
+                    <span style={{ fontSize: 16, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 10 }}>
+                      {g.title}
+                    </span>
+                    <span className="pill pill-accent">{Math.max(0,daysLeft)}d left</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 10 }}>
+                    Day {dayNum} · {new Date(g.deadline + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+                  </div>
+                  <div className="pbar-track">
+                    <div className="pbar-fill" style={{ width: `${Math.max(2,pct)}%` }} />
+                  </div>
+                  <div className="row mt-3" style={{ justifyContent: 'flex-end' }}>
+                    <span className="ms" style={{ fontSize: 20, color: 'var(--ink-3)' }}>chevron_right</span>
+                  </div>
                 </div>
-                <div className="text-xs text-muted mb-2">Day {dayNum} · {new Date(g.deadline).toLocaleDateString()}</div>
-                <div className="progress-bar-track">
-                  <div className="progress-bar-fill" style={{ width: `${Math.max(2, pct)}%` }} />
-                </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

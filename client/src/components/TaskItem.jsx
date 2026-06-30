@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../utils/api.js';
 
-function EditModal({ task, dayId, goalId, onSave, onCancel }) {
+function EditSheet({ task, dayId, goalId, onSave, onCancel }) {
   const [form, setForm] = useState({
     time: task.time || '',
     time_end: task.time_end || '',
@@ -14,75 +14,45 @@ function EditModal({ task, dayId, goalId, onSave, onCancel }) {
   function set(key, val) { setForm(f => ({ ...f, [key]: val })); }
 
   async function save() {
-    setSaving(true);
-    setError(null);
+    setSaving(true); setError(null);
     try {
       await api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/edit`, form);
       onSave();
-    } catch (e) {
-      setError(e.message);
-      setSaving(false);
-    }
+    } catch (e) { setError(e.message); setSaving(false); }
   }
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', zIndex: 300 }}
-      onClick={onCancel}
-    >
-      <div
-        style={{ background: 'var(--bg2)', width: '100%', borderRadius: '20px 20px 0 0', padding: 20, paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', maxHeight: '85vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 style={{ fontSize: 17 }}>Edit Task</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onCancel}>✕</button>
+    <div className="sheet-overlay" onClick={onCancel}>
+      <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="sheet-handle" />
+        <div className="row-between mb-4">
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Edit task</h2>
+          <button className="btn-icon" onClick={onCancel}>
+            <span className="ms" style={{ fontSize: 20 }}>close</span>
+          </button>
         </div>
-
         {error && <div className="error-box mb-3">{error}</div>}
-
-        <div className="flex gap-2 mb-3">
+        <div className="row gap-3 mb-3">
           <div style={{ flex: 1 }}>
             <label className="label">Start time</label>
-            <input
-              type="text"
-              placeholder="9:00 AM"
-              value={form.time}
-              onChange={e => set('time', e.target.value)}
-            />
+            <input placeholder="9:00 AM" value={form.time} onChange={e => set('time', e.target.value)} />
           </div>
           <div style={{ flex: 1 }}>
             <label className="label">End time</label>
-            <input
-              type="text"
-              placeholder="10:00 AM"
-              value={form.time_end}
-              onChange={e => set('time_end', e.target.value)}
-            />
+            <input placeholder="10:00 AM" value={form.time_end} onChange={e => set('time_end', e.target.value)} />
           </div>
         </div>
-
         <div className="mb-3">
           <label className="label">Title</label>
-          <input
-            type="text"
-            value={form.title}
-            onChange={e => set('title', e.target.value)}
-          />
+          <input value={form.title} onChange={e => set('title', e.target.value)} />
         </div>
-
         <div className="mb-4">
-          <label className="label">Description / Instructions</label>
-          <textarea
-            rows={4}
-            value={form.instruction}
-            onChange={e => set('instruction', e.target.value)}
-          />
+          <label className="label">Instructions</label>
+          <textarea rows={4} value={form.instruction} onChange={e => set('instruction', e.target.value)} />
         </div>
-
-        <div className="flex gap-2">
+        <div className="row gap-2">
           <button className="btn btn-primary" style={{ flex: 1 }} onClick={save} disabled={saving}>
-            {saving ? <span className="spinner" /> : 'Save'}
+            {saving ? <span className="spinner" /> : 'Save changes'}
           </button>
           <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
         </div>
@@ -101,15 +71,7 @@ export default function TaskItem({ task, dayId, goalId, onUpdate }) {
     try {
       await api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/status`, { status });
       onUpdate?.();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleSaved() {
-    setEditing(false);
-    setExpanded(false);
-    onUpdate?.();
+    } finally { setLoading(false); }
   }
 
   const isDone = task.status === 'done';
@@ -118,35 +80,53 @@ export default function TaskItem({ task, dayId, goalId, onUpdate }) {
   return (
     <>
       <div
-        className={`task-item ${isDone ? 'done' : ''}`}
-        style={{ cursor: 'pointer' }}
+        className={`task-row${isDone ? ' done' : ''}`}
         onClick={() => setExpanded(e => !e)}
       >
+        {/* Checkbox */}
         <button
-          className={`checkbox ${isDone ? 'checked' : isSkipped ? 'skipped' : ''}`}
+          className={`task-row-check${isDone ? ' done' : isSkipped ? ' skipped' : ''}`}
           onClick={e => { e.stopPropagation(); setStatus(isDone ? 'pending' : 'done'); }}
           disabled={loading}
         >
-          {isDone && '✓'}
-          {isSkipped && '—'}
+          {isDone && <span className="ms ms-fill" style={{ fontSize: 16, color: '#fff' }}>check</span>}
+          {isSkipped && <span className="ms ms-fill" style={{ fontSize: 16, color: '#fff' }}>remove</span>}
+          {loading && <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />}
         </button>
+
+        {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="task-time">
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-2)', marginBottom: 2 }}>
             {task.time}{task.time_end ? ` – ${task.time_end}` : task.duration_minutes ? ` · ${task.duration_minutes}min` : ''}
           </div>
-          <div className="task-title">{task.title}</div>
-          {expanded ? (
-            <div className="task-instruction mt-2">{task.instruction}</div>
-          ) : (
-            <div className="task-instruction" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              {task.instruction}
+          <div style={{
+            fontSize: 15, fontWeight: 600, color: 'var(--ink)',
+            textDecoration: isDone ? 'line-through' : 'none',
+            textDecorationColor: 'var(--ink-3)',
+          }}>
+            {task.title}
+          </div>
+          <div style={{
+            fontSize: 13, color: 'var(--ink-2)', marginTop: 3, lineHeight: 1.4,
+            ...(expanded ? {} : { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }),
+          }}>
+            {task.instruction}
+          </div>
+          {task.goal_title && (
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>
+              📎 {task.goal_title}
             </div>
           )}
           {expanded && (
-            <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
+            <div className="row gap-2 mt-3" onClick={e => e.stopPropagation()}>
               {!isDone && (
-                <button className="btn btn-sm btn-secondary" onClick={() => setStatus('done')} disabled={loading}>
+                <button className="btn btn-sm btn-sage" onClick={() => setStatus('done')} disabled={loading}>
                   Done ✓
+                </button>
+              )}
+              {isDone && (
+                <button className="btn btn-sm btn-ghost" onClick={() => setStatus('pending')} disabled={loading}>
+                  Undo
                 </button>
               )}
               {!isSkipped && !isDone && (
@@ -154,23 +134,23 @@ export default function TaskItem({ task, dayId, goalId, onUpdate }) {
                   Skip
                 </button>
               )}
-              <button className="btn btn-sm btn-ghost" onClick={() => setEditing(true)}>
-                ✏️ Edit
+              <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(true); }}>
+                <span className="ms" style={{ fontSize: 15 }}>edit</span> Edit
               </button>
             </div>
           )}
-          {task.goal_title && (
-            <div className="text-xs text-muted mt-2">📎 {task.goal_title}</div>
-          )}
         </div>
+
+        {/* Right dot */}
+        <span className={`task-dot${isDone ? ' done' : ''}`} />
       </div>
 
       {editing && (
-        <EditModal
+        <EditSheet
           task={task}
           dayId={dayId}
           goalId={goalId}
-          onSave={handleSaved}
+          onSave={() => { setEditing(false); setExpanded(false); onUpdate?.(); }}
           onCancel={() => setEditing(false)}
         />
       )}
