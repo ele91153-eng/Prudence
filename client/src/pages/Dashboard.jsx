@@ -4,8 +4,27 @@ import { api } from '../utils/api.js';
 import { requestNotificationPermission, subscribeToPush } from '../utils/push.js';
 import TaskItem from '../components/TaskItem.jsx';
 
+// Use local date string (YYYY-MM-DD) to avoid UTC offset shifting the day
+function localDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  // Append T12:00:00 so date parsing treats it as local noon, not UTC midnight
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+// Parse "9:00 AM" / "10:30 PM" style times to minutes for sorting
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const m = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return 0;
+  let [, h, min, period] = m;
+  h = parseInt(h); min = parseInt(min);
+  if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
+  if (period.toUpperCase() === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
 }
 
 export default function Dashboard() {
@@ -61,7 +80,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1>Today</h1>
-            <div className="text-sm text-muted mt-2" style={{ marginTop: 2 }}>{formatDate(data?.date)}</div>
+            <div className="text-sm text-muted mt-2" style={{ marginTop: 2 }}>{formatDate(localDateStr())}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             {data?.goals?.map(g => (
@@ -125,7 +144,7 @@ export default function Dashboard() {
               <div className="text-muted text-sm">No tasks generated yet. Tap a goal to load today's tasks.</div>
             ) : (
               allTasks
-                .sort((a, b) => a.time?.localeCompare(b.time || '') || 0)
+                .sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time))
                 .map((task, i) => (
                   <TaskItem
                     key={`${task.goal_id}-${task.day_id}-${task.index}`}

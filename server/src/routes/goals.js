@@ -4,6 +4,11 @@ import { generateClarifyingQuestions, generateFullPlan, generateDayTasks, regene
 
 const router = express.Router();
 
+function localToday() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 // Get all active goals
 router.get('/', (req, res) => {
   const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1 ORDER BY created_at DESC`).all();
@@ -87,7 +92,7 @@ router.get('/:id/today', async (req, res) => {
   const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(req.params.id);
   if (!goal) return res.status(404).json({ error: 'Not found' });
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   const startDate = goal.created_at.split('T')[0].split(' ')[0];
   const dayNumber = Math.ceil((new Date(today) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
   const daysUntilDeadline = Math.ceil((new Date(goal.deadline) - new Date(today)) / (1000 * 60 * 60 * 24));
@@ -164,13 +169,37 @@ router.post('/:id/tasks/:dayId/:taskIndex/status', (req, res) => {
   res.json({ ok: true });
 });
 
+// Edit an individual task block (updates the JSON in the days table)
+router.post('/:id/tasks/:dayId/:taskIndex/edit', (req, res) => {
+  const { dayId, taskIndex } = req.params;
+  const { time, time_end, title, instruction } = req.body;
+
+  const dayRecord = db.prepare(`SELECT * FROM days WHERE id = ?`).get(parseInt(dayId));
+  if (!dayRecord) return res.status(404).json({ error: 'Day not found' });
+
+  const tasks = JSON.parse(dayRecord.tasks);
+  const idx = parseInt(taskIndex);
+  if (idx < 0 || idx >= tasks.length) return res.status(404).json({ error: 'Task not found' });
+
+  tasks[idx] = {
+    ...tasks[idx],
+    ...(time !== undefined && { time }),
+    ...(time_end !== undefined && { time_end }),
+    ...(title !== undefined && { title }),
+    ...(instruction !== undefined && { instruction }),
+  };
+
+  db.prepare(`UPDATE days SET tasks = ? WHERE id = ?`).run(JSON.stringify(tasks), parseInt(dayId));
+  res.json({ ok: true, task: tasks[idx] });
+});
+
 // Regenerate today's tasks
 router.post('/:id/today/regenerate', async (req, res) => {
   const { reason } = req.body;
   const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(req.params.id);
   if (!goal) return res.status(404).json({ error: 'Not found' });
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   const startDate = goal.created_at.split('T')[0].split(' ')[0];
   const dayNumber = Math.ceil((new Date(today) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
@@ -232,7 +261,7 @@ router.get('/:id/history', (req, res) => {
 router.post('/:id/metrics', (req, res) => {
   const { metric_name, value, date } = req.body;
   db.prepare(`INSERT INTO metrics (goal_id, date, metric_name, value) VALUES (?, ?, ?, ?)`)
-    .run(req.params.id, date || new Date().toISOString().split('T')[0], metric_name, String(value));
+    .run(req.params.id, date || localToday(), metric_name, String(value));
   res.json({ ok: true });
 });
 

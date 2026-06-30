@@ -5,7 +5,9 @@ const router = express.Router();
 
 // Get merged daily dashboard (all active goals)
 router.get('/today', async (req, res) => {
-  const today = new Date().toISOString().split('T')[0];
+  // Use local date (not UTC) so the day matches the user's timezone
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1`).all();
 
   const combined = [];
