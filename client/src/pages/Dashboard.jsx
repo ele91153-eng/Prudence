@@ -4,6 +4,7 @@ import { api } from '../utils/api.js';
 import { requestNotificationPermission, subscribeToPush } from '../utils/push.js';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
+import { formatGoalTitle } from '../utils/titleFormat.js';
 
 function localDateStr() {
   const d = new Date();
@@ -194,7 +195,7 @@ export default function Dashboard() {
               return (
                 <div key={g.goal_id} className="card mb-3" onClick={() => navigate(`/goals/${g.goal_id}`)} style={{ cursor: 'pointer' }}>
                   <div className="row-between mb-2">
-                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{g.goal_title}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{formatGoalTitle(g.goal_title)}</span>
                     <span className="pill pill-accent">{g.days_until_deadline}d left</span>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 8 }}>Day {g.day_number} · {g.phase_name}</div>

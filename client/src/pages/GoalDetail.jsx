@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
+import { formatGoalTitle } from '../utils/titleFormat.js';
 
 function parseTimeToMinutes(t) {
   if (!t) return 0;
@@ -174,7 +175,7 @@ export default function GoalDetail() {
           <span className="ms" style={{ fontSize: 22 }}>arrow_back_ios_new</span>
         </button>
         <div style={{ flex: 1, textAlign: 'center', padding: '0 8px' }}>
-          <div style={{ fontSize: 15, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{goal?.title}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatGoalTitle(goal?.title)}</div>
           <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Day {dayNum} · {daysLeft} days left</div>
         </div>
         <button className="btn-icon" onClick={archiveGoal}>

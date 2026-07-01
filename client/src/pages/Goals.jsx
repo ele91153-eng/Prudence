@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import Prudence from '../components/Prudence.jsx';
+import { formatGoalTitle } from '../utils/titleFormat.js';
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
@@ -55,7 +56,7 @@ export default function Goals() {
                 >
                   <div className="row-between mb-2">
                     <span style={{ fontSize: 16, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 10 }}>
-                      {g.title}
+                      {formatGoalTitle(g.title)}
                     </span>
                     <span className="pill pill-accent">{Math.max(0,daysLeft)}d left</span>
                   </div>
