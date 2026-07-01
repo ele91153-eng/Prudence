@@ -35,7 +35,30 @@ app.use('/api/dashboard', dashboardRouter);
 // Serve built client in production
 const clientDist = path.join(__dirname, '../../client/dist');
 if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  // Serve static files with correct MIME types for PWA files
+  app.use(express.static(clientDist, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.json') && filePath.includes('manifest')) {
+        res.setHeader('Content-Type', 'application/manifest+json');
+      } else if (filePath.endsWith('.webmanifest')) {
+        res.setHeader('Content-Type', 'application/manifest+json');
+      } else if (filePath.endsWith('sw.js') || filePath.endsWith('registerSW.js')) {
+        // Service workers must not be cached by the browser
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    },
+  }));
+  // Explicit route for manifest.json so it's always found regardless of static config
+  app.get('/manifest.json', (req, res) => {
+    const mf = path.join(clientDist, 'manifest.json');
+    if (fs.existsSync(mf)) {
+      res.setHeader('Content-Type', 'application/manifest+json');
+      res.sendFile(mf);
+    } else {
+      res.status(404).json({ error: 'manifest not found' });
+    }
+  });
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
       res.sendFile(path.join(clientDist, 'index.html'));

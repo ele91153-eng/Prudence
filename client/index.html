@@ -2,14 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/icon-192.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#6366f1" />
+
+    <!-- PWA manifest (injected by vite-plugin-pwa at build, explicit fallback here) -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Favicon / home screen icon -->
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+
+    <!-- iOS-specific PWA tags (Safari ignores the manifest for these) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="GoalCoach" />
-    <title>AI Goal Coach</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Prudence AI" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Theme / splash color matching Prudence design system -->
+    <meta name="theme-color" content="#EC8B43" />
+    <meta name="msapplication-TileColor" content="#EC8B43" />
+
+    <title>Prudence AI</title>
   </head>
   <body>
     <div id="root"></div>
