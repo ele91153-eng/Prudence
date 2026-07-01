@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import goalsRouter from './routes/goals.js';
 import pushRouter from './routes/push.js';
 import dashboardRouter from './routes/dashboard.js';
+import chatRouter from './routes/chat.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use('/api/goals', goalsRouter);
 app.use('/api/push', pushRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/chat', chatRouter);
 
 // Serve built client in production
 const clientDist = path.join(__dirname, '../../client/dist');

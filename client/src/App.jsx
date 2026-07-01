@@ -4,14 +4,15 @@ import Goals from './pages/Goals.jsx';
 import NewGoal from './pages/NewGoal.jsx';
 import GoalDetail from './pages/GoalDetail.jsx';
 import History from './pages/History.jsx';
+import Chat from './pages/Chat.jsx';
 import Prudence from './components/Prudence.jsx';
 
 function Nav() {
   const loc = useLocation();
-  const isHome = loc.pathname === '/';
-  const isGoals = loc.pathname.startsWith('/goals') && !loc.pathname.includes('new');
+  const isChat = loc.pathname === '/chat';
   const isNew = loc.pathname.includes('new');
-  const isHistory = loc.pathname === '/history';
+  // Hide nav on chat page (full-screen experience)
+  if (isChat) return null;
 
   return (
     <nav className="nav">
@@ -23,27 +24,25 @@ function Nav() {
         <span className="ms" style={{ fontSize: 25 }}>flag</span>
         <span>Goals</span>
       </NavLink>
-      {/* Centre Prudence button — taps to New Goal */}
-      <NavLink to="/goals/new" className="nav-center">
+      {/* Centre Prudence button — opens Chat */}
+      <NavLink to="/chat" className="nav-center">
         <div style={{
           width: 50, height: 50, borderRadius: '50%',
           boxShadow: '0 8px 20px rgba(236,139,67,.45)',
           position: 'relative', overflow: 'visible',
-          background: isNew ? 'var(--accent-2)' : 'transparent',
           transition: 'box-shadow 0.2s',
         }}>
           <Prudence size={50} style={{ animation: 'prudencefloat 4s ease-in-out infinite' }} />
         </div>
-        <span style={{ color: isNew ? 'var(--accent)' : undefined }}>Prudence</span>
+        <span>Chat</span>
       </NavLink>
       <NavLink to="/history" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
         <span className="ms" style={{ fontSize: 25 }}>insights</span>
         <span>Stats</span>
       </NavLink>
-      {/* Profile placeholder — links to goals for now */}
-      <NavLink to="/goals" className="nav-item">
-        <span className="ms" style={{ fontSize: 25 }}>person</span>
-        <span>Profile</span>
+      <NavLink to="/goals/new" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+        <span className="ms" style={{ fontSize: 25 }}>add_circle</span>
+        <span>New Goal</span>
       </NavLink>
     </nav>
   );
@@ -58,6 +57,7 @@ export default function App() {
         <Route path="/goals/new" element={<NewGoal />} />
         <Route path="/goals/:id" element={<GoalDetail />} />
         <Route path="/history" element={<History />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Nav />

@@ -11,9 +11,9 @@ export default defineConfig({
       manifestFilename: 'manifest.json',
       includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Prudence AI',
+        name: 'Prudence: AI for Productivity',
         short_name: 'Prudence',
-        description: 'Your personal AI goal coach',
+        description: 'Prudence: AI for Productivity — your personal goal coach',
         theme_color: '#EC8B43',
         background_color: '#ECE4D6',
         display: 'standalone',
