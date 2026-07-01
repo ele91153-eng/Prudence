@@ -1,70 +1,28 @@
-<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Golden mascot">
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Golden Prudence">
   <defs>
-    <radialGradient id="gd_body" cx="38%" cy="30%" r="65%">
-      <stop offset="0%"   stop-color="#FFE88A"/>
-      <stop offset="55%"  stop-color="#F5C518"/>
-      <stop offset="100%" stop-color="#D4940A"/>
+    <radialGradient id="gb" cx="38%" cy="28%" r="65%">
+      <stop offset="0%" stop-color="#FFF3A0"/>
+      <stop offset="60%" stop-color="#F5C518"/>
+      <stop offset="100%" stop-color="#C89208"/>
     </radialGradient>
-    <radialGradient id="gd_tummy" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#FFF8D0" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#FFF8D0" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="gd_cheekL" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#F0A830" stop-opacity="0.65"/>
-      <stop offset="100%" stop-color="#F0A830" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="gd_cheekR" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#F0A830" stop-opacity="0.65"/>
-      <stop offset="100%" stop-color="#F0A830" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="gd_shadow" x="-20%" y="-10%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#D4940A" flood-opacity="0.30"/>
-    </filter>
-    <filter id="gd_leafShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#8A7010" flood-opacity="0.35"/>
-    </filter>
+    <filter id="sh"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#907000" flood-opacity="0.28"/></filter>
   </defs>
-  <!-- Gold-tinted leaf -->
-  <path d="M 68 22 Q 72 32 68 40" stroke="#B8A020" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <g filter="url(#gd_leafShadow)">
-    <ellipse cx="74" cy="16" rx="10" ry="14" fill="#D4B830" transform="rotate(-30 74 16)"/>
-    <ellipse cx="71" cy="13" rx="4.5" ry="7" fill="#F0D860" opacity="0.7" transform="rotate(-30 71 13)"/>
-    <path d="M 66 23 Q 74 16 80 10" stroke="#A89020" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.5"/>
-  </g>
+  <!-- Gold leaf -->
+  <ellipse cx="74" cy="17" rx="9" ry="13" fill="#D4B030" transform="rotate(-32 74 17)"/>
+  <ellipse cx="72" cy="14" rx="4" ry="7" fill="#F0D050" opacity="0.7" transform="rotate(-32 72 14)"/>
+  <path d="M 67 27 Q 64 34 62 40" stroke="#B89020" stroke-width="2" stroke-linecap="round" fill="none"/>
   <!-- Body -->
-  <circle cx="58" cy="66" r="46" fill="url(#gd_body)" filter="url(#gd_shadow)"/>
-  <!-- Tummy -->
-  <ellipse cx="58" cy="74" rx="26" ry="30" fill="url(#gd_tummy)"/>
-  <!-- Shine -->
-  <ellipse cx="44" cy="44" rx="13" ry="9" fill="white" opacity="0.22" transform="rotate(-20 44 44)"/>
-  <!-- Sparkle stars (4-pointed) -->
-  <!-- Star 1 -->
-  <path d="M 30 50 L 32 44 L 34 50 L 40 52 L 34 54 L 32 60 L 30 54 L 24 52 Z" fill="white" opacity="0.85"/>
-  <!-- Star 2 -->
-  <path d="M 78 38 L 80 33 L 82 38 L 87 40 L 82 42 L 80 47 L 78 42 L 73 40 Z" fill="white" opacity="0.80"/>
-  <!-- Star 3 -->
-  <path d="M 85 72 L 87 67 L 89 72 L 94 74 L 89 76 L 87 81 L 85 76 L 80 74 Z" fill="#FFFAC0" opacity="0.75"/>
-  <!-- Star 4 -->
-  <path d="M 26 82 L 28 77 L 30 82 L 35 84 L 30 86 L 28 91 L 26 86 L 21 84 Z" fill="#FFFAC0" opacity="0.70"/>
-  <!-- Star 5 (small) -->
-  <path d="M 68 92 L 69.5 88 L 71 92 L 75 93.5 L 71 95 L 69.5 99 L 68 95 L 64 93.5 Z" fill="white" opacity="0.65"/>
-  <!-- Star 6 (small) -->
-  <path d="M 42 38 L 43.5 34 L 45 38 L 49 39.5 L 45 41 L 43.5 45 L 42 41 L 38 39.5 Z" fill="white" opacity="0.60"/>
-  <!-- Eyes -->
-  <ellipse cx="46" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
-  <ellipse cx="70" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
-  <circle cx="48.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
-  <circle cx="72.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
-  <circle cx="46.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
-  <circle cx="70.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
+  <circle cx="60" cy="67" r="44" fill="url(#gb)" filter="url(#sh)"/>
+  <!-- Sparkles -->
+  <path d="M 32 50 L 33.5 46 L 35 50 L 39 51.5 L 35 53 L 33.5 57 L 32 53 L 28 51.5 Z" fill="white" opacity="0.75"/>
+  <path d="M 82 40 L 83 37 L 84 40 L 87 41 L 84 42 L 83 45 L 82 42 L 79 41 Z" fill="white" opacity="0.7"/>
+  <path d="M 88 72 L 89 69.5 L 90 72 L 92.5 73 L 90 74 L 89 76.5 L 88 74 L 85.5 73 Z" fill="white" opacity="0.65"/>
+  <!-- Eyes — simple dots -->
+  <circle cx="47" cy="62" r="5" fill="#3A2800"/>
+  <circle cx="73" cy="62" r="5" fill="#3A2800"/>
   <!-- Cheeks -->
-  <ellipse cx="37" cy="70" rx="11" ry="7" fill="url(#gd_cheekL)"/>
-  <ellipse cx="79" cy="70" rx="11" ry="7" fill="url(#gd_cheekR)"/>
+  <ellipse cx="36" cy="72" rx="10" ry="7" fill="#E8A820" opacity="0.38"/>
+  <ellipse cx="84" cy="72" rx="10" ry="7" fill="#E8A820" opacity="0.38"/>
   <!-- Smile -->
-  <path d="M 46 76 Q 58 90 70 76" stroke="#3A2410" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <circle cx="45.5" cy="75.5" r="1.5" fill="#3A2410"/>
-  <circle cx="70.5" cy="75.5" r="1.5" fill="#3A2410"/>
-  <!-- Arms -->
-  <ellipse cx="16" cy="72" rx="9" ry="6" fill="#C4900A" transform="rotate(-15 16 72)"/>
-  <ellipse cx="100" cy="72" rx="9" ry="6" fill="#C4900A" transform="rotate(15 100 72)"/>
+  <path d="M 45 76 Q 60 92 75 76" stroke="#3A2800" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>

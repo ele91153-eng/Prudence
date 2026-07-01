@@ -1,64 +1,29 @@
-<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Watermelon mascot">
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Watermelon Prudence">
   <defs>
-    <radialGradient id="wm_body" cx="38%" cy="30%" r="65%">
-      <stop offset="0%"   stop-color="#88CC88"/>
-      <stop offset="55%"  stop-color="#4CAF74"/>
-      <stop offset="100%" stop-color="#2A7A40"/>
+    <radialGradient id="wb" cx="38%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#90DD90"/>
+      <stop offset="70%" stop-color="#3DAF55"/>
+      <stop offset="100%" stop-color="#258038"/>
     </radialGradient>
-    <radialGradient id="wm_tummy" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#C8F0C8" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#C8F0C8" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="wm_cheekL" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#F07080" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#F07080" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="wm_cheekR" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#F07080" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#F07080" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="wm_shadow" x="-20%" y="-10%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#2A7A40" flood-opacity="0.30"/>
-    </filter>
-    <filter id="wm_stemShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#1A4A20" flood-opacity="0.35"/>
-    </filter>
+    <filter id="sh"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#186028" flood-opacity="0.22"/></filter>
   </defs>
   <!-- Stem -->
-  <g filter="url(#wm_stemShadow)">
-    <rect x="56" y="16" width="4" height="10" rx="2" fill="#5A8A30" transform="rotate(5 58 20)"/>
-    <ellipse cx="62" cy="17" rx="5" ry="3" fill="#6AB040" transform="rotate(-20 62 17)"/>
-  </g>
+  <path d="M 60 22 Q 62 30 60 38" stroke="#4A9A50" stroke-width="2.5" stroke-linecap="round" fill="none"/>
   <!-- Body -->
-  <circle cx="58" cy="66" r="46" fill="url(#wm_body)" filter="url(#wm_shadow)"/>
-  <!-- Dark green stripes -->
-  <path d="M 20 55 Q 35 40 55 38" stroke="#1E6030" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.5"/>
-  <path d="M 15 72 Q 28 55 50 52" stroke="#1E6030" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.5"/>
-  <path d="M 25 88 Q 40 75 60 72" stroke="#1E6030" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.5"/>
-  <path d="M 70 42 Q 88 46 98 60" stroke="#1E6030" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.5"/>
-  <!-- Tummy -->
-  <ellipse cx="58" cy="74" rx="26" ry="30" fill="url(#wm_tummy)"/>
-  <!-- Shine -->
-  <ellipse cx="44" cy="44" rx="13" ry="9" fill="white" opacity="0.18" transform="rotate(-20 44 44)"/>
-  <!-- Eyes -->
-  <ellipse cx="46" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
-  <ellipse cx="70" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
-  <circle cx="48.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
-  <circle cx="72.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
-  <circle cx="46.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
-  <circle cx="70.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
-  <!-- Cheeks (larger, more prominent) -->
-  <ellipse cx="35" cy="70" rx="14" ry="9" fill="url(#wm_cheekL)"/>
-  <ellipse cx="81" cy="70" rx="14" ry="9" fill="url(#wm_cheekR)"/>
+  <circle cx="60" cy="67" r="44" fill="url(#wb)" filter="url(#sh)"/>
+  <!-- Darker stripes -->
+  <path d="M 40 38 Q 32 67 40 96" stroke="#259040" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.35"/>
+  <path d="M 80 38 Q 88 67 80 96" stroke="#259040" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.35"/>
+  <!-- Seeds -->
+  <ellipse cx="48" cy="80" rx="3" ry="4.5" fill="#1A1A1A" opacity="0.5" transform="rotate(-10 48 80)"/>
+  <ellipse cx="62" cy="85" rx="3" ry="4.5" fill="#1A1A1A" opacity="0.5"/>
+  <ellipse cx="74" cy="80" rx="3" ry="4.5" fill="#1A1A1A" opacity="0.5" transform="rotate(10 74 80)"/>
+  <!-- Eyes — simple dots -->
+  <circle cx="47" cy="62" r="5" fill="#1A3A1A"/>
+  <circle cx="73" cy="62" r="5" fill="#1A3A1A"/>
+  <!-- Cheeks — pink to suggest watermelon inside -->
+  <ellipse cx="36" cy="72" rx="10" ry="7" fill="#F07080" opacity="0.38"/>
+  <ellipse cx="84" cy="72" rx="10" ry="7" fill="#F07080" opacity="0.38"/>
   <!-- Smile -->
-  <path d="M 46 76 Q 58 90 70 76" stroke="#3A2410" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <circle cx="45.5" cy="75.5" r="1.5" fill="#3A2410"/>
-  <circle cx="70.5" cy="75.5" r="1.5" fill="#3A2410"/>
-  <!-- Black seeds near bottom of face -->
-  <ellipse cx="50" cy="83" rx="3" ry="2" fill="#1A1A1A" transform="rotate(-10 50 83)"/>
-  <ellipse cx="58" cy="87" rx="3" ry="2" fill="#1A1A1A" transform="rotate(0 58 87)"/>
-  <ellipse cx="66" cy="83" rx="3" ry="2" fill="#1A1A1A" transform="rotate(10 66 83)"/>
-  <!-- Arms -->
-  <ellipse cx="16" cy="72" rx="9" ry="6" fill="#3A8A3A" transform="rotate(-15 16 72)"/>
-  <ellipse cx="100" cy="72" rx="9" ry="6" fill="#3A8A3A" transform="rotate(15 100 72)"/>
+  <path d="M 45 76 Q 60 92 75 76" stroke="#1A3A1A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>

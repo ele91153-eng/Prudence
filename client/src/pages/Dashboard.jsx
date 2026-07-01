@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
-import { requestNotificationPermission, subscribeToPush } from '../utils/push.js';
+import { subscribeToPush } from '../utils/push.js';
+import { scheduleTaskNotifications, requestNotificationPermission } from '../utils/notifications.js';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
 import LiveTaskBar from '../components/LiveTaskBar.jsx';
@@ -65,6 +66,10 @@ export default function Dashboard() {
       const stored = parseInt(localStorage.getItem('prudence_max_streak') || '0', 10);
       if (maxStreak > stored) localStorage.setItem('prudence_max_streak', String(maxStreak));
       checkUnlocks(maxStreak);
+      // Schedule client-side task notifications
+      if (Notification.permission === 'granted') {
+        scheduleTaskNotifications(d.goals ?? []);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -77,7 +82,10 @@ export default function Dashboard() {
   async function enableNotifications() {
     setNotifAsked(true);
     const granted = await requestNotificationPermission();
-    if (granted) await subscribeToPush();
+    if (granted) {
+      await subscribeToPush().catch(() => {});
+      scheduleTaskNotifications(data?.goals ?? []);
+    }
   }
 
   if (loading) return (
