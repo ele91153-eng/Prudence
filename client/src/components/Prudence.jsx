@@ -1,7 +1,12 @@
+import { useMascot } from '../context/MascotContext.jsx';
+
 export default function Prudence({ size = 54, style = {}, animate = true }) {
+  const ctx = useMascot();
+  const src = ctx?.currentSrc ?? '/mascots/prudence.svg';
+
   return (
     <img
-      src="/prudence.svg"
+      src={src}
       width={size}
       height={size}
       alt="Prudence"

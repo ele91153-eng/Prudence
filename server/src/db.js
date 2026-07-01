@@ -65,6 +65,10 @@ db.exec(`
   );
 `);
 
+// Safe migrations for columns added after initial deploy
+try { db.exec(`ALTER TABLE goals ADD COLUMN color TEXT DEFAULT '#EC8B43'`); } catch {}
+try { db.exec(`ALTER TABLE goals ADD COLUMN mascot_id TEXT DEFAULT 'prudence'`); } catch {}
+
 // Wrap node:sqlite's StatementSync to match the better-sqlite3 API shape
 // (prepare returns an object with .all(), .get(), .run())
 function prepare(sql) {

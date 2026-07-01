@@ -4,7 +4,10 @@ import { api } from '../utils/api.js';
 import { requestNotificationPermission, subscribeToPush } from '../utils/push.js';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
+import LiveTaskBar from '../components/LiveTaskBar.jsx';
+import CelebrationModal from '../components/CelebrationModal.jsx';
 import { formatGoalTitle } from '../utils/titleFormat.js';
+import { useMascot } from '../context/MascotContext.jsx';
 
 function localDateStr() {
   const d = new Date();
@@ -50,18 +53,24 @@ export default function Dashboard() {
   const [notifAsked, setNotifAsked] = useState(false);
   const navigate = useNavigate();
   const quote = PRUDENCE_QUOTES[new Date().getDay() % PRUDENCE_QUOTES.length];
+  const { checkUnlocks, celebration, clearCelebration } = useMascot();
 
   const load = useCallback(async () => {
     try {
       const d = await api.get('/dashboard/today');
       setData(d);
       setError(null);
+      // Check streak unlocks
+      const maxStreak = Math.max(0, ...Object.values(d.streaks ?? {}));
+      const stored = parseInt(localStorage.getItem('prudence_max_streak') || '0', 10);
+      if (maxStreak > stored) localStorage.setItem('prudence_max_streak', String(maxStreak));
+      checkUnlocks(maxStreak);
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [checkUnlocks]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -103,6 +112,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ background: 'var(--canvas)', minHeight: '100dvh', paddingBottom: 'calc(var(--nav-h) + var(--safe-bottom) + 16px)' }}>
+      {celebration && <CelebrationModal mascot={celebration} onClose={clearCelebration} />}
       {/* Ambient glow */}
       <div style={{ position: 'fixed', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(236,139,67,.14),transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: 120, left: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle,rgba(124,169,138,.1),transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
@@ -121,6 +131,13 @@ export default function Dashboard() {
           Prudence: AI for Productivity
         </div>
       </div>
+
+      {/* Live task bar */}
+      {hasGoals && (
+        <div style={{ padding: '0 22px', position: 'relative', zIndex: 1 }}>
+          <LiveTaskBar goals={data?.goals ?? []} />
+        </div>
+      )}
 
       {/* Prudence says */}
       <div style={{ padding: '18px 22px 0', position: 'relative', zIndex: 1 }}>
@@ -192,14 +209,15 @@ export default function Dashboard() {
             {/* Goal progress cards */}
             {data.goals.map(g => {
               const pct = Math.round((1 - g.days_until_deadline / Math.max(1, g.day_number + g.days_until_deadline)) * 100);
+              const color = g.goal_color || 'var(--accent)';
               return (
-                <div key={g.goal_id} className="card mb-3" onClick={() => navigate(`/goals/${g.goal_id}`)} style={{ cursor: 'pointer' }}>
+                <div key={g.goal_id} className="card mb-3" onClick={() => navigate(`/goals/${g.goal_id}`)} style={{ cursor: 'pointer', borderLeft: `4px solid ${color}`, background: `linear-gradient(135deg, ${color}0D 0%, var(--surface) 40%)` }}>
                   <div className="row-between mb-2">
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{formatGoalTitle(g.goal_title)}</span>
-                    <span className="pill pill-accent">{g.days_until_deadline}d left</span>
+                    <span className="pill" style={{ background: `${color}22`, color }}>{g.days_until_deadline}d left</span>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 8 }}>Day {g.day_number} · {g.phase_name}</div>
-                  <div className="pbar-track"><div className="pbar-fill" style={{ width: `${Math.max(2, pct)}%` }} /></div>
+                  <div className="pbar-track"><div className="pbar-fill" style={{ width: `${Math.max(2, pct)}%`, background: color }} /></div>
                 </div>
               );
             })}
@@ -223,6 +241,7 @@ export default function Dashboard() {
                       task={task}
                       dayId={task.day_id}
                       goalId={task.goal_id}
+                      goalColor={task.goal_color}
                       onUpdate={load}
                     />
                   ))}

@@ -45,7 +45,7 @@ router.post('/clarify', async (req, res) => {
 
 // Step 2: Create goal with full plan
 router.post('/', async (req, res) => {
-  const { title, description, deadline, category, clarifying_answers, preferred_times } = req.body;
+  const { title, description, deadline, category, clarifying_answers, preferred_times, color } = req.body;
   if (!description || !deadline) return res.status(400).json({ error: 'description and deadline required' });
 
   try {
@@ -56,8 +56,8 @@ router.post('/', async (req, res) => {
     );
 
     const result = db.prepare(`
-      INSERT INTO goals (title, description, deadline, category, phases, clarifying_answers, preferred_times)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO goals (title, description, deadline, category, phases, clarifying_answers, preferred_times, color)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title || description.slice(0, 60),
       description,
@@ -65,7 +65,8 @@ router.post('/', async (req, res) => {
       category || plan.category || 'other',
       JSON.stringify(plan.phases),
       JSON.stringify(clarifying_answers || {}),
-      preferred_times || 'flexible'
+      preferred_times || 'flexible',
+      color || '#EC8B43'
     );
 
     const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(result.lastInsertRowid);

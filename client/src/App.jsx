@@ -5,13 +5,14 @@ import NewGoal from './pages/NewGoal.jsx';
 import GoalDetail from './pages/GoalDetail.jsx';
 import History from './pages/History.jsx';
 import Chat from './pages/Chat.jsx';
+import Wardrobe from './pages/Wardrobe.jsx';
 import Prudence from './components/Prudence.jsx';
+import { MascotProvider } from './context/MascotContext.jsx';
 
 function Nav() {
   const loc = useLocation();
   const isChat = loc.pathname === '/chat';
   const isNew = loc.pathname.includes('new');
-  // Hide nav on chat page (full-screen experience)
   if (isChat) return null;
 
   return (
@@ -40,9 +41,9 @@ function Nav() {
         <span className="ms" style={{ fontSize: 25 }}>insights</span>
         <span>Stats</span>
       </NavLink>
-      <NavLink to="/goals/new" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-        <span className="ms" style={{ fontSize: 25 }}>add_circle</span>
-        <span>New Goal</span>
+      <NavLink to="/wardrobe" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+        <span className="ms" style={{ fontSize: 25 }}>checkroom</span>
+        <span>Wardrobe</span>
       </NavLink>
     </nav>
   );
@@ -50,17 +51,20 @@ function Nav() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/goals" element={<Goals />} />
-        <Route path="/goals/new" element={<NewGoal />} />
-        <Route path="/goals/:id" element={<GoalDetail />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <Nav />
-    </BrowserRouter>
+    <MascotProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/goals" element={<Goals />} />
+          <Route path="/goals/new" element={<NewGoal />} />
+          <Route path="/goals/:id" element={<GoalDetail />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/wardrobe" element={<Wardrobe />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Nav />
+      </BrowserRouter>
+    </MascotProvider>
   );
 }

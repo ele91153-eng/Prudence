@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import Prudence from '../components/Prudence.jsx';
+import ColorPicker, { GOAL_COLORS } from '../components/ColorPicker.jsx';
 
 const STEPS = { GOAL: 'goal', QUESTIONS: 'questions', TIMES: 'times', GENERATING: 'generating' };
 
@@ -14,6 +15,7 @@ export default function NewGoal() {
   const [category, setCategory] = useState('');
   const [answers, setAnswers] = useState({});
   const [preferredTimes, setPreferredTimes] = useState('');
+  const [goalColor, setGoalColor] = useState(GOAL_COLORS[0].hex);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -41,6 +43,7 @@ export default function NewGoal() {
         category,
         clarifying_answers: answers,
         preferred_times: preferredTimes || 'flexible',
+        color: goalColor,
       });
       navigate(`/goals/${goal.id}`, { replace: true });
     } catch (e) {
@@ -97,7 +100,8 @@ export default function NewGoal() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary btn-full" disabled={loading || !goalText.trim() || !deadline}>
+            <ColorPicker value={goalColor} onChange={setGoalColor} />
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading || !goalText.trim() || !deadline} style={{ background: goalColor, borderColor: goalColor }}>
               {loading
                 ? <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing…</>
                 : <>Continue <span className="ms" style={{ fontSize: 18 }}>arrow_forward</span></>

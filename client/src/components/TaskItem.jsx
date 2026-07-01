@@ -61,7 +61,7 @@ function EditSheet({ task, dayId, goalId, onSave, onCancel }) {
   );
 }
 
-export default function TaskItem({ task, dayId, goalId, onUpdate }) {
+export default function TaskItem({ task, dayId, goalId, goalColor, onUpdate }) {
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -96,7 +96,7 @@ export default function TaskItem({ task, dayId, goalId, onUpdate }) {
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-2)', marginBottom: 2 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: goalColor || 'var(--accent-2)', marginBottom: 2 }}>
             {task.time}{task.time_end ? ` – ${task.time_end}` : task.duration_minutes ? ` · ${task.duration_minutes}min` : ''}
           </div>
           <div style={{
@@ -142,7 +142,7 @@ export default function TaskItem({ task, dayId, goalId, onUpdate }) {
         </div>
 
         {/* Right dot */}
-        <span className={`task-dot${isDone ? ' done' : ''}`} />
+        <span className={`task-dot${isDone ? ' done' : ''}`} style={!isDone && goalColor ? { background: `${goalColor}55`, borderColor: goalColor } : {}} />
       </div>
 
       {editing && (

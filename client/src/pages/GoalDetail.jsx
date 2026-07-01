@@ -188,7 +188,7 @@ export default function GoalDetail() {
         <div className="col" style={{ alignItems: 'center', marginBottom: 20 }}>
           <div className="ring-wrap" style={{
             width: 168, height: 168,
-            background: `conic-gradient(var(--accent) 0% ${overallPct}%, var(--accent-soft) ${overallPct}% 100%)`,
+            background: `conic-gradient(${goal?.color || 'var(--accent)'} 0% ${overallPct}%, ${goal?.color ? goal.color + '22' : 'var(--accent-soft)'} ${overallPct}% 100%)`,
           }}>
             <div className="ring-inner" style={{ width: 132, height: 132 }}>
               <Prudence size={46} style={{ marginBottom: 4 }} />

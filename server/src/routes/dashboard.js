@@ -26,6 +26,7 @@ router.get('/today', async (req, res) => {
     combined.push({
       goal_id: goal.id,
       goal_title: goal.title,
+      goal_color: goal.color || '#EC8B43',
       phase_name: dayRecord.phase_name,
       day_number: dayNumber,
       days_until_deadline: daysUntilDeadline,
@@ -36,6 +37,7 @@ router.get('/today', async (req, res) => {
         index: i,
         goal_id: goal.id,
         goal_title: goal.title,
+        goal_color: goal.color || '#EC8B43',
         day_id: dayRecord.id,
         status: completions.find(c => c.task_index === i)?.status || 'pending',
       })),
