@@ -62,7 +62,7 @@ function fireTaskNotification(task, goal) {
   try {
     const n = new Notification(`⏰ ${task.title}`, {
       body: goal.title ? `Time to work on: ${goal.title}` : 'Your task is starting now',
-      icon: '/mascots/prudence.svg',
+      icon: '/prudence-original.png',
       badge: '/icons/icon-96.png',
       tag: `task-${task.id}`,
       renotify: true,

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMascot } from '../context/MascotContext.jsx';
 
 function parseTimeToMinutes(t) {
   if (!t) return null;
@@ -20,8 +19,7 @@ function nowMinutes() {
 
 export default function LiveTaskBar({ goals = [] }) {
   const navigate = useNavigate();
-  const { currentSrc } = useMascot();
-  const [now, setNow] = useState(nowMinutes());
+const [now, setNow] = useState(nowMinutes());
   const [pulse, setPulse] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const firedRef = useRef(new Set()); // track which tasks we already alerted
@@ -84,7 +82,7 @@ export default function LiveTaskBar({ goals = [] }) {
             cursor: 'pointer',
           }}
         >
-          <img src={currentSrc} width={32} height={32} alt="" style={{ flexShrink: 0 }} />
+          <img src="/prudence-original.png" width={32} height={32} alt="" style={{ flexShrink: 0, objectFit: 'contain', aspectRatio: '1' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.8)', letterSpacing: 1, textTransform: 'uppercase' }}>⏰ Starting Now</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{upcoming.title}</div>
@@ -109,7 +107,7 @@ export default function LiveTaskBar({ goals = [] }) {
           transition: 'all 0.3s',
         }}
       >
-        <img src={currentSrc} width={28} height={28} alt="" style={{ flexShrink: 0, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.15))' }} />
+        <img src="/prudence-original.png" width={28} height={28} alt="" style={{ flexShrink: 0, objectFit: 'contain', aspectRatio: '1', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.15))' }} />
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
