@@ -1,0 +1,82 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prudence mascot">
+  <defs>
+    <!-- Body gradient — warm orange, lit from top-left for 3D look -->
+    <radialGradient id="body" cx="38%" cy="30%" r="65%">
+      <stop offset="0%"   stop-color="#FDD07A"/>
+      <stop offset="55%"  stop-color="#EC8B43"/>
+      <stop offset="100%" stop-color="#C85E1A"/>
+    </radialGradient>
+    <!-- Tummy highlight -->
+    <radialGradient id="tummy" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#FDE8BB" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FDE8BB" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Cheek colour -->
+    <radialGradient id="cheekL" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#E8745A" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#E8745A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cheekR" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#E8745A" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#E8745A" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Drop shadow filter -->
+    <filter id="shadow" x="-20%" y="-10%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#C85E1A" flood-opacity="0.30"/>
+    </filter>
+    <!-- Leaf shadow -->
+    <filter id="leafShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#3A7A50" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- ── Leaf stem ── -->
+  <path d="M 68 22 Q 72 32 68 40" stroke="#5A9A6A" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- ── Leaf ── -->
+  <g filter="url(#leafShadow)">
+    <!-- Main leaf body -->
+    <ellipse cx="74" cy="16" rx="10" ry="14" fill="#6DB87E" transform="rotate(-30 74 16)"/>
+    <!-- Leaf highlight -->
+    <ellipse cx="71" cy="13" rx="4.5" ry="7" fill="#90D0A0" opacity="0.6" transform="rotate(-30 71 13)"/>
+    <!-- Leaf midrib -->
+    <path d="M 66 23 Q 74 16 80 10" stroke="#4A8A5A" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.5"/>
+  </g>
+
+  <!-- ── Body ── -->
+  <circle cx="58" cy="66" r="46" fill="url(#body)" filter="url(#shadow)"/>
+
+  <!-- ── Tummy highlight ── -->
+  <ellipse cx="58" cy="74" rx="26" ry="30" fill="url(#tummy)"/>
+
+  <!-- ── Top shine ── -->
+  <ellipse cx="44" cy="44" rx="13" ry="9" fill="white" opacity="0.18" transform="rotate(-20 44 44)"/>
+
+  <!-- ── Eyes ── -->
+  <!-- Left eye -->
+  <ellipse cx="46" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
+  <!-- Right eye -->
+  <ellipse cx="70" cy="60" rx="5.5" ry="6.5" fill="#3A2410"/>
+  <!-- Eye shine left -->
+  <circle cx="48.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
+  <!-- Eye shine right -->
+  <circle cx="72.5" cy="57.5" r="2.2" fill="white" opacity="0.85"/>
+  <!-- Small lower shine -->
+  <circle cx="46.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
+  <circle cx="70.5" cy="62.5" r="1" fill="white" opacity="0.4"/>
+
+  <!-- ── Cheeks ── -->
+  <ellipse cx="37" cy="70" rx="11" ry="7" fill="url(#cheekL)"/>
+  <ellipse cx="79" cy="70" rx="11" ry="7" fill="url(#cheekR)"/>
+
+  <!-- ── Smile ── -->
+  <!-- Smile base arc — open bottom curve -->
+  <path d="M 46 76 Q 58 90 70 76" stroke="#3A2410" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Tiny smile dimples -->
+  <circle cx="45.5" cy="75.5" r="1.5" fill="#3A2410"/>
+  <circle cx="70.5" cy="75.5" r="1.5" fill="#3A2410"/>
+
+  <!-- ── Tiny arm nubs ── -->
+  <ellipse cx="16" cy="72" rx="9" ry="6" fill="#D97A2A" transform="rotate(-15 16 72)"/>
+  <ellipse cx="100" cy="72" rx="9" ry="6" fill="#D97A2A" transform="rotate(15 100 72)"/>
+</svg>

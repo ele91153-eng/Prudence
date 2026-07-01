@@ -32,7 +32,7 @@ function Nav() {
           position: 'relative', overflow: 'visible',
           transition: 'box-shadow 0.2s',
         }}>
-          <Prudence size={50} style={{ animation: 'prudencefloat 4s ease-in-out infinite' }} />
+          <Prudence size={50} />
         </div>
         <span>Chat</span>
       </NavLink>
