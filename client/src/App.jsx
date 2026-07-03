@@ -27,14 +27,7 @@ function Nav() {
       </NavLink>
       {/* Centre Prudence button — opens Chat */}
       <NavLink to="/chat" className="nav-center">
-        <div style={{
-          width: 50, height: 50, borderRadius: '50%',
-          boxShadow: '0 8px 20px rgba(236,139,67,.45)',
-          position: 'relative', overflow: 'visible',
-          transition: 'box-shadow 0.2s',
-        }}>
-          <Prudence size={50} />
-        </div>
+        <Prudence size={50} animate={false} style={{ filter: 'drop-shadow(0 4px 10px rgba(236,139,67,.45))' }} />
         <span>Chat</span>
       </NavLink>
       <NavLink to="/history" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>

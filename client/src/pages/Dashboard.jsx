@@ -67,7 +67,7 @@ export default function Dashboard() {
       if (maxStreak > stored) localStorage.setItem('prudence_max_streak', String(maxStreak));
       checkUnlocks(maxStreak);
       // Schedule client-side task notifications
-      if (Notification.permission === 'granted') {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         scheduleTaskNotifications(d.goals ?? []);
       }
     } catch (e) {
@@ -109,7 +109,7 @@ export default function Dashboard() {
   const hasGoals = (data?.goals?.length ?? 0) > 0;
   const allTasks = (data?.goals ?? []).flatMap(g => g.tasks);
   const doneTasks = allTasks.filter(t => t.status === 'done').length;
-  const showNotifBanner = !notifAsked && 'Notification' in window && Notification.permission === 'default';
+  const showNotifBanner = !notifAsked && typeof Notification !== 'undefined' && Notification.permission === 'default';
 
   const today = new Date();
   const dayOfWeek = today.getDay();
