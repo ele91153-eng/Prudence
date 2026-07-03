@@ -101,7 +101,7 @@ export default function CelebrationModal({ mascot, onClose }) {
       >
         <div style={{ fontSize: 40, marginBottom: 8 }}>{mascot.emoji}</div>
         <img
-          src="/prudence-original.png"
+          src={mascot.src}
           width={110} height={110}
           alt={mascot.name}
           style={{ margin: '0 auto 16px', display: 'block', objectFit: 'contain', aspectRatio: '1', filter: 'drop-shadow(0 10px 24px rgba(0,0,0,.22))' }}

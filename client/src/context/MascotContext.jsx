@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 
 export const MASCOTS = [
-  { id: 'prudence',   name: 'Prudence',            emoji: '🍊', streakRequired: 0,   src: '/mascots/prudence.svg',   desc: 'The original. Warm, bright, always there for you.' },
-  { id: 'strawberry', name: 'Strawberry Prudence',  emoji: '🍓', streakRequired: 3,   src: '/mascots/strawberry.svg', desc: 'Sweet and determined. 3 days strong!' },
-  { id: 'watermelon', name: 'Watermelon Prudence',  emoji: '🍉', streakRequired: 7,   src: '/mascots/watermelon.svg', desc: 'Cool under pressure. A whole week done.' },
-  { id: 'blueberry',  name: 'Blueberry Prudence',   emoji: '🫐', streakRequired: 14,  src: '/mascots/blueberry.svg',  desc: 'Deep focus, deep purple. Two weeks in.' },
-  { id: 'kiwi',       name: 'Kiwi Prudence',        emoji: '🥝', streakRequired: 21,  src: '/mascots/kiwi.svg',       desc: 'Tough outside, bright inside. Three weeks!' },
-  { id: 'golden',     name: 'Golden Prudence',      emoji: '✨', streakRequired: 30,  src: '/mascots/golden.svg',     desc: 'A full month. You are golden.' },
-  { id: 'cosmic',     name: 'Cosmic Prudence',      emoji: '🌌', streakRequired: 50,  src: '/mascots/cosmic.svg',     desc: 'Out of this world. 50 days of showing up.' },
-  { id: 'diamond',    name: 'Diamond Prudence',     emoji: '💎', streakRequired: 100, src: '/mascots/diamond.svg',    desc: 'Legendary. 100 days. Unbreakable.' },
+  { id: 'prudence',   name: 'Prudence',            emoji: '🍊', streakRequired: 0,   src: '/prudence-original.png',   desc: 'The original. Warm, bright, always there for you.' },
+  { id: 'strawberry', name: 'Strawberry Prudence',  emoji: '🍓', streakRequired: 3,   src: '/mascots/strawberry.png',  desc: 'Sweet and determined. 3 days strong!' },
+  { id: 'watermelon', name: 'Watermelon Prudence',  emoji: '🍉', streakRequired: 7,   src: '/mascots/watermelon.png',  desc: 'Cool under pressure. A whole week done.' },
+  { id: 'blueberry',  name: 'Blueberry Prudence',   emoji: '🫐', streakRequired: 14,  src: '/mascots/blueberry.png',   desc: 'Deep focus, deep purple. Two weeks in.' },
+  { id: 'kiwi',       name: 'Kiwi Prudence',        emoji: '🥝', streakRequired: 21,  src: '/mascots/kiwi.png',        desc: 'Tough outside, bright inside. Three weeks!' },
+  { id: 'golden',     name: 'Golden Prudence',      emoji: '✨', streakRequired: 30,  src: '/mascots/golden.png',      desc: 'A full month. You are golden.' },
+  { id: 'cosmic',     name: 'Cosmic Prudence',      emoji: '🌌', streakRequired: 50,  src: '/mascots/cosmic.png',      desc: 'Out of this world. 50 days of showing up.' },
+  { id: 'diamond',    name: 'Diamond Prudence',     emoji: '💎', streakRequired: 100, src: '/mascots/diamond.png',     desc: 'Legendary. 100 days. Unbreakable.' },
 ];
 
 const MascotContext = createContext(null);
@@ -35,7 +35,6 @@ export function MascotProvider({ children }) {
     const updated = [...unlocked, ...newOnes.map(m => m.id)];
     setUnlocked(updated);
     localStorage.setItem('prudence_unlocked', JSON.stringify(updated));
-    // Celebrate the highest newly unlocked
     setCelebration(newOnes[newOnes.length - 1]);
   }, [unlocked]);
 
