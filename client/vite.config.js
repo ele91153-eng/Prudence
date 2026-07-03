@@ -15,7 +15,7 @@ export default defineConfig({
         short_name: 'Prudence',
         description: 'Prudence: AI for Productivity — your personal goal coach',
         theme_color: '#EC8B43',
-        background_color: '#ECE4D6',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         scope: '/',

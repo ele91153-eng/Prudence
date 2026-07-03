@@ -19,7 +19,7 @@ export function scheduleTaskNotifications(goals = []) {
   for (const id of scheduledTimers.values()) clearTimeout(id);
   scheduledTimers.clear();
 
-  if (Notification.permission !== 'granted') return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
   const now = Date.now();
 
