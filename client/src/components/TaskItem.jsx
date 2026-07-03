@@ -86,7 +86,8 @@ export default function TaskItem({ task, dayId, goalId, goalColor, onUpdate }) {
         {/* Checkbox */}
         <button
           className={`task-row-check${isDone ? ' done' : isSkipped ? ' skipped' : ''}`}
-          onClick={e => { e.stopPropagation(); setStatus(isDone ? 'pending' : 'done'); }}
+          onClick={e => { e.stopPropagation(); e.preventDefault(); setStatus(isDone ? 'pending' : 'done'); }}
+          onTouchEnd={e => { e.stopPropagation(); e.preventDefault(); setStatus(isDone ? 'pending' : 'done'); }}
           disabled={loading}
         >
           {isDone && <span className="ms ms-fill" style={{ fontSize: 16, color: '#fff' }}>check</span>}
@@ -106,12 +107,14 @@ export default function TaskItem({ task, dayId, goalId, goalColor, onUpdate }) {
           }}>
             {task.title}
           </div>
-          <div style={{
-            fontSize: 13, color: 'var(--ink-2)', marginTop: 3, lineHeight: 1.4,
-            ...(expanded ? {} : { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }),
-          }}>
-            {task.instruction}
-          </div>
+          {task.instruction ? (
+            <div style={{
+              fontSize: 13, color: 'var(--ink-2)', marginTop: 3, lineHeight: 1.4,
+              ...(expanded ? {} : { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }),
+            }}>
+              {task.instruction}
+            </div>
+          ) : null}
           {task.goal_title && (
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>
               📎 {task.goal_title}
