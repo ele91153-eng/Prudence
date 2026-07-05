@@ -2,10 +2,14 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// CAPACITOR_BUILD=1 skips service worker generation — SW caching/update
+// semantics don't apply reliably inside Capacitor's wrapped WebView.
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === '1';
+
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
+    !isCapacitorBuild && VitePWA({
       registerType: 'autoUpdate',
       // Use manifest.json (not .webmanifest) for widest iOS Safari compatibility
       manifestFilename: 'manifest.json',
@@ -41,7 +45,7 @@ export default defineConfig({
         enabled: false,
       },
     }),
-  ],
+  ].filter(Boolean),
   server: {
     proxy: {
       '/api': 'http://localhost:3001',

@@ -17,6 +17,8 @@ const PORT = process.env.PORT || 3001;
 const allowedOrigins = [
   /^https?:\/\/localhost(:\d+)?$/,
   /^https:\/\/.*\.onrender\.com$/,
+  /^capacitor:\/\/localhost$/,   // iOS Capacitor WebView origin
+  /^https:\/\/localhost$/,        // Android Capacitor WebView origin (https scheme)
   ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
 ];
 app.use(cors({

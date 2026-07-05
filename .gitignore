@@ -4,3 +4,15 @@ data/
 .env
 *.db
 .DS_Store
+
+# Capacitor native build artifacts (native projects themselves are tracked)
+client/ios/App/Pods/
+client/ios/App/build/
+client/ios/App/App.xcworkspace/xcuserdata/
+client/ios/App/App.xcodeproj/xcuserdata/
+client/android/.gradle/
+client/android/app/build/
+client/android/build/
+client/android/local.properties
+client/android/.idea/
+client/android/captures/
