@@ -63,11 +63,29 @@ db.exec(`
     keys TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  -- Per-user mascot/wardrobe state (Supabase user id as key; node:sqlite stays
+  -- the source of truth, Supabase is only used for auth/identity)
+  CREATE TABLE IF NOT EXISTS user_mascot_state (
+    user_id TEXT PRIMARY KEY,
+    selected_mascot_id TEXT DEFAULT 'prudence',
+    unlocked_mascots TEXT DEFAULT '["prudence"]',
+    max_streak INTEGER DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  -- Single-row-per-key store for one-time server-side flags (e.g. legacy data claim)
+  CREATE TABLE IF NOT EXISTS app_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  );
 `);
 
 // Safe migrations for columns added after initial deploy
 try { db.exec(`ALTER TABLE goals ADD COLUMN color TEXT DEFAULT '#EC8B43'`); } catch {}
 try { db.exec(`ALTER TABLE goals ADD COLUMN mascot_id TEXT DEFAULT 'prudence'`); } catch {}
+try { db.exec(`ALTER TABLE goals ADD COLUMN user_id TEXT`); } catch {}
+try { db.exec(`ALTER TABLE task_completions ADD COLUMN notification_id TEXT`); } catch {}
 
 // Wrap node:sqlite's StatementSync to match the better-sqlite3 API shape
 // (prepare returns an object with .all(), .get(), .run())

@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../db.js';
 import { generateClarifyingQuestions, generateFullPlan, generateDayTasks, regenerateDayTasks } from '../ai.js';
+import { ownsGoal } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ function localToday() {
 
 // Get all active goals
 router.get('/', (req, res) => {
-  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1 ORDER BY created_at DESC`).all();
+  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1 AND user_id = ? ORDER BY created_at DESC`).all(req.userId);
   res.json(goals.map(g => ({
     ...g,
     phases: JSON.parse(g.phases || '[]'),
@@ -21,7 +22,7 @@ router.get('/', (req, res) => {
 
 // Get single goal
 router.get('/:id', (req, res) => {
-  const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(req.params.id);
+  const goal = db.prepare(`SELECT * FROM goals WHERE id = ? AND user_id = ?`).get(req.params.id, req.userId);
   if (!goal) return res.status(404).json({ error: 'Not found' });
   res.json({
     ...goal,
@@ -56,8 +57,8 @@ router.post('/', async (req, res) => {
     );
 
     const result = db.prepare(`
-      INSERT INTO goals (title, description, deadline, category, phases, clarifying_answers, preferred_times, color)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO goals (title, description, deadline, category, phases, clarifying_answers, preferred_times, color, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title || description.slice(0, 60),
       description,
@@ -66,7 +67,8 @@ router.post('/', async (req, res) => {
       JSON.stringify(plan.phases),
       JSON.stringify(clarifying_answers || {}),
       preferred_times || 'flexible',
-      color || '#EC8B43'
+      color || '#EC8B43',
+      req.userId
     );
 
     const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(result.lastInsertRowid);
@@ -84,13 +86,14 @@ router.post('/', async (req, res) => {
 
 // Delete/archive a goal
 router.delete('/:id', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   db.prepare(`UPDATE goals SET is_active = 0 WHERE id = ?`).run(req.params.id);
   res.json({ ok: true });
 });
 
 // Get today's tasks for a goal
 router.get('/:id/today', async (req, res) => {
-  const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(req.params.id);
+  const goal = db.prepare(`SELECT * FROM goals WHERE id = ? AND user_id = ?`).get(req.params.id, req.userId);
   if (!goal) return res.status(404).json({ error: 'Not found' });
 
   const today = localToday();
@@ -145,18 +148,23 @@ router.get('/:id/today', async (req, res) => {
     deadline: goal.deadline,
     phase_name: dayRecord.phase_name,
     current_phase: currentPhase,
-    tasks: tasks.map((t, i) => ({
-      ...t,
-      index: i,
-      status: completions.find(c => c.task_index === i)?.status || 'pending',
-      completed_at: completions.find(c => c.task_index === i)?.completed_at,
-    })),
+    tasks: tasks.map((t, i) => {
+      const c = completions.find(c => c.task_index === i);
+      return {
+        ...t,
+        index: i,
+        status: c?.status || 'pending',
+        completed_at: c?.completed_at,
+        notification_id: c?.notification_id || null,
+      };
+    }),
     day_id: dayRecord.id,
   });
 });
 
 // Update task completion status
 router.post('/:id/tasks/:dayId/:taskIndex/status', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   const { status, note } = req.body;
   const { dayId, taskIndex } = req.params;
   const completedAt = status === 'done' ? new Date().toISOString() : null;
@@ -170,8 +178,24 @@ router.post('/:id/tasks/:dayId/:taskIndex/status', (req, res) => {
   res.json({ ok: true });
 });
 
+// Set/clear the native notification id scheduled for a task, without touching status
+router.post('/:id/tasks/:dayId/:taskIndex/notification', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
+  const { notification_id } = req.body;
+  const { dayId, taskIndex } = req.params;
+
+  db.prepare(`
+    INSERT INTO task_completions (day_id, task_index, status, notification_id)
+    VALUES (?, ?, 'pending', ?)
+    ON CONFLICT(day_id, task_index) DO UPDATE SET notification_id = excluded.notification_id
+  `).run(parseInt(dayId), parseInt(taskIndex), notification_id || null);
+
+  res.json({ ok: true });
+});
+
 // Edit an individual task block (updates the JSON in the days table)
 router.post('/:id/tasks/:dayId/:taskIndex/edit', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   const { dayId, taskIndex } = req.params;
   const { time, time_end, title, instruction } = req.body;
 
@@ -196,6 +220,7 @@ router.post('/:id/tasks/:dayId/:taskIndex/edit', (req, res) => {
 
 // Regenerate today's tasks
 router.post('/:id/today/regenerate', async (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   const { reason } = req.body;
   const goal = db.prepare(`SELECT * FROM goals WHERE id = ?`).get(req.params.id);
   if (!goal) return res.status(404).json({ error: 'Not found' });
@@ -209,6 +234,13 @@ router.post('/:id/today/regenerate', async (req, res) => {
 
   const dayRecord = db.prepare(`SELECT * FROM days WHERE goal_id = ? AND date = ?`).get(goal.id, today);
   const originalTasks = dayRecord ? JSON.parse(dayRecord.tasks) : [];
+
+  // Collect any notification ids scheduled for this day so the client can
+  // cancel them natively before the tasks they point to are replaced.
+  const clearedNotificationIds = dayRecord
+    ? db.prepare(`SELECT notification_id FROM task_completions WHERE day_id = ? AND notification_id IS NOT NULL`)
+        .all(dayRecord.id).map(r => r.notification_id)
+    : [];
 
   try {
     const tasks = await regenerateDayTasks(
@@ -232,7 +264,7 @@ router.post('/:id/today/regenerate', async (req, res) => {
       db.prepare(`DELETE FROM task_completions WHERE day_id = ?`).run(dayRecord.id);
     }
 
-    res.json({ tasks });
+    res.json({ tasks, cleared_notification_ids: clearedNotificationIds });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -241,6 +273,7 @@ router.post('/:id/today/regenerate', async (req, res) => {
 
 // Get goal history/log
 router.get('/:id/history', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   const days = db.prepare(`
     SELECT d.*,
            COUNT(tc.id) as total_tasks,
@@ -260,6 +293,7 @@ router.get('/:id/history', (req, res) => {
 
 // Log a metric
 router.post('/:id/metrics', (req, res) => {
+  if (!ownsGoal(req.params.id, req.userId)) return res.status(404).json({ error: 'Not found' });
   const { metric_name, value, date } = req.body;
   db.prepare(`INSERT INTO metrics (goal_id, date, metric_name, value) VALUES (?, ?, ?, ?)`)
     .run(req.params.id, date || localToday(), metric_name, String(value));

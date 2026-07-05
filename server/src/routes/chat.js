@@ -21,9 +21,9 @@ function localToday() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-function buildSystemPrompt() {
+function buildSystemPrompt(userId) {
   const today = localToday();
-  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1`).all();
+  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1 AND user_id = ?`).all(userId);
 
   let context = '';
 
@@ -219,7 +219,7 @@ router.post('/', upload.single('file'), async (req, res) => {
   }
 
   try {
-    const systemPrompt = buildSystemPrompt();
+    const systemPrompt = buildSystemPrompt(req.userId);
     const apiMessages = await buildMessages(messages, req.file);
 
     if (!apiMessages.length) {

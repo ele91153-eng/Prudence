@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import Prudence from '../components/Prudence.jsx';
 import { api } from '../utils/api.js';
+import { getAccessToken } from '../utils/auth.js';
 
 const OPENER = {
   role: 'assistant',
@@ -276,16 +277,19 @@ export default function Chat() {
         .filter(m => m !== OPENER && !(m.role === 'assistant' && m === messages[0]))
         .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content || '' }));
 
+      const token = await getAccessToken();
+      const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
       let res;
       if (sentFile) {
         const form = new FormData();
         form.append('messages', JSON.stringify(apiMessages));
         form.append('file', sentFile);
-        res = await fetch('/api/chat', { method: 'POST', body: form });
+        res = await fetch('/api/chat', { method: 'POST', headers: authHeader, body: form });
       } else {
         res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeader },
           body: JSON.stringify({ messages: apiMessages }),
         });
       }

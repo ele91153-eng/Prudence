@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
-import { subscribeToPush } from '../utils/push.js';
-import { scheduleTaskNotifications, requestNotificationPermission } from '../utils/notifications.js';
+import { scheduleTaskReminder } from '../utils/localNotifications.js';
+import { syncWidgetSnapshot } from '../utils/widgetBridge.ts';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
 import LiveTaskBar from '../components/LiveTaskBar.jsx';
@@ -51,10 +51,31 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [notifAsked, setNotifAsked] = useState(false);
+  const [notifHint, setNotifHint] = useState(false);
   const navigate = useNavigate();
   const quote = PRUDENCE_QUOTES[new Date().getDay() % PRUDENCE_QUOTES.length];
-  const { checkUnlocks, celebration, clearCelebration } = useMascot();
+  const { checkUnlocks, celebration, clearCelebration, selected: selectedMascotId } = useMascot();
+
+  // Schedules a 5-minutes-before reminder for any pending, timed task that
+  // doesn't already have one — this is the "permission requested lazily,
+  // the first time a task is actually scheduled" path (Part 2).
+  const scheduleMissingReminders = useCallback(async (goals) => {
+    let anyDenied = false;
+    for (const goal of goals) {
+      for (const task of goal.tasks || []) {
+        if (task.status !== 'pending' || !task.time || task.notification_id) continue;
+        const result = await scheduleTaskReminder({
+          dayId: task.day_id, taskIndex: task.index, title: task.title, time: task.time, goalId: task.goal_id,
+        });
+        if (result.ok) {
+          api.post(`/goals/${task.goal_id}/tasks/${task.day_id}/${task.index}/notification`, { notification_id: result.id }).catch(() => {});
+        } else if (result.reason === 'denied') {
+          anyDenied = true;
+        }
+      }
+    }
+    if (anyDenied) setNotifHint(true);
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -66,27 +87,16 @@ export default function Dashboard() {
       const stored = parseInt(localStorage.getItem('prudence_max_streak') || '0', 10);
       if (maxStreak > stored) localStorage.setItem('prudence_max_streak', String(maxStreak));
       checkUnlocks(maxStreak);
-      // Schedule client-side task notifications
-      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        scheduleTaskNotifications(d.goals ?? []);
-      }
+      scheduleMissingReminders(d.goals ?? []);
+      syncWidgetSnapshot({ streak: maxStreak, selectedMascotId, goals: d.goals ?? [] });
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, [checkUnlocks]);
+  }, [checkUnlocks, scheduleMissingReminders, selectedMascotId]);
 
   useEffect(() => { load(); }, [load]);
-
-  async function enableNotifications() {
-    setNotifAsked(true);
-    const granted = await requestNotificationPermission();
-    if (granted) {
-      await subscribeToPush().catch(() => {});
-      scheduleTaskNotifications(data?.goals ?? []);
-    }
-  }
 
   if (loading) return (
     <div style={{ background: 'var(--canvas)', minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
@@ -109,7 +119,6 @@ export default function Dashboard() {
   const hasGoals = (data?.goals?.length ?? 0) > 0;
   const allTasks = (data?.goals ?? []).flatMap(g => g.tasks);
   const doneTasks = allTasks.filter(t => t.status === 'done').length;
-  const showNotifBanner = !notifAsked && typeof Notification !== 'undefined' && Notification.permission === 'default';
 
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -158,11 +167,11 @@ export default function Dashboard() {
           <p className="prudence-says-quote">{quote}</p>
         </div>
 
-        {/* Notification banner */}
-        {showNotifBanner && (
+        {/* Gentle hint if a reminder couldn't be scheduled due to denied permission */}
+        {notifHint && (
           <div className="card row-between mb-4" style={{ background: 'var(--accent-soft)', borderColor: 'rgba(236,139,67,.25)' }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>🔔 Enable task reminders</span>
-            <button className="btn btn-sm btn-primary" onClick={enableNotifications}>Enable</button>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>🔕 Reminders are off — enable notifications in Settings anytime</span>
+            <button className="btn btn-sm btn-ghost" onClick={() => setNotifHint(false)}>Dismiss</button>
           </div>
         )}
 

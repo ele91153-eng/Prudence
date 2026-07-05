@@ -1,9 +1,17 @@
+import { getAccessToken } from './auth.js';
+
 const BASE = '/api';
 
 async function req(method, path, body) {
+  const token = await getAccessToken();
+  const headers = {
+    ...(body ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const res = await fetch(BASE + path, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : {},
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {

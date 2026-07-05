@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
 import Goals from './pages/Goals.jsx';
 import NewGoal from './pages/NewGoal.jsx';
@@ -8,6 +9,20 @@ import Chat from './pages/Chat.jsx';
 import Wardrobe from './pages/Wardrobe.jsx';
 import Prudence from './components/Prudence.jsx';
 import { MascotProvider } from './context/MascotContext.jsx';
+import { bootstrapAuth } from './utils/auth.js';
+import { onNotificationTapped } from './utils/localNotifications.js';
+
+// Tapping a task reminder deep-links into the app. There's no per-task
+// detail route today — Dashboard already surfaces every task on the "today"
+// screen, so this opens Home. If a task-detail route is added later, use
+// extra.goalId/dayId/taskIndex to navigate there directly instead.
+function NotificationDeepLinkHandler() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    onNotificationTapped(() => navigate('/'));
+  }, [navigate]);
+  return null;
+}
 
 function Nav() {
   const loc = useLocation();
@@ -43,9 +58,36 @@ function Nav() {
 }
 
 export default function App() {
+  const [authReady, setAuthReady] = useState(false);
+  const [authError, setAuthError] = useState(null);
+
+  useEffect(() => {
+    bootstrapAuth()
+      .then(() => setAuthReady(true))
+      .catch(e => setAuthError(e.message));
+  }, []);
+
+  if (authError) {
+    return (
+      <div style={{ background: 'var(--canvas)', minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24, textAlign: 'center' }}>
+        <Prudence size={72} animate={false} />
+        <div style={{ fontSize: 15, color: 'var(--ink-2)' }}>Couldn't connect — check your internet and try again.</div>
+      </div>
+    );
+  }
+
+  if (!authReady) {
+    return (
+      <div style={{ background: 'var(--canvas)', minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Prudence size={72} />
+      </div>
+    );
+  }
+
   return (
     <MascotProvider>
       <BrowserRouter>
+        <NotificationDeepLinkHandler />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/goals" element={<Goals />} />

@@ -8,6 +8,8 @@ import goalsRouter from './routes/goals.js';
 import pushRouter from './routes/push.js';
 import dashboardRouter from './routes/dashboard.js';
 import chatRouter from './routes/chat.js';
+import userRouter from './routes/user.js';
+import { requireAuth } from './middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,10 +33,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use('/api/goals', goalsRouter);
-app.use('/api/push', pushRouter);
-app.use('/api/dashboard', dashboardRouter);
-app.use('/api/chat', chatRouter);
+app.use('/api/goals', requireAuth, goalsRouter);
+app.use('/api/push', pushRouter); // unauthenticated: web-push VAPID flow, not per-user scoped
+app.use('/api/dashboard', requireAuth, dashboardRouter);
+app.use('/api/chat', requireAuth, chatRouter);
+app.use('/api/user', requireAuth, userRouter);
 
 // Serve built client in production
 const clientDist = path.join(__dirname, '../../client/dist');

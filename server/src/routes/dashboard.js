@@ -3,12 +3,12 @@ import db from '../db.js';
 
 const router = express.Router();
 
-// Get merged daily dashboard (all active goals)
+// Get merged daily dashboard (all active goals for the authenticated user)
 router.get('/today', async (req, res) => {
   // Use local date (not UTC) so the day matches the user's timezone
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1`).all();
+  const goals = db.prepare(`SELECT * FROM goals WHERE is_active = 1 AND user_id = ?`).all(req.userId);
 
   const combined = [];
 
@@ -32,15 +32,19 @@ router.get('/today', async (req, res) => {
       days_until_deadline: daysUntilDeadline,
       deadline: goal.deadline,
       day_id: dayRecord.id,
-      tasks: tasks.map((t, i) => ({
-        ...t,
-        index: i,
-        goal_id: goal.id,
-        goal_title: goal.title,
-        goal_color: goal.color || '#EC8B43',
-        day_id: dayRecord.id,
-        status: completions.find(c => c.task_index === i)?.status || 'pending',
-      })),
+      tasks: tasks.map((t, i) => {
+        const c = completions.find(c => c.task_index === i);
+        return {
+          ...t,
+          index: i,
+          goal_id: goal.id,
+          goal_title: goal.title,
+          goal_color: goal.color || '#EC8B43',
+          day_id: dayRecord.id,
+          status: c?.status || 'pending',
+          notification_id: c?.notification_id || null,
+        };
+      }),
     });
   }
 

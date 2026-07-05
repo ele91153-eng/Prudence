@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api.js';
+import { cancelTaskReminder } from '../utils/localNotifications.js';
 import TaskItem from '../components/TaskItem.jsx';
 import Prudence from '../components/Prudence.jsx';
 import { formatGoalTitle } from '../utils/titleFormat.js';
@@ -118,7 +119,10 @@ export default function GoalDetail() {
     setRegenLoading(true);
     setShowRegen(false);
     try {
-      await api.post(`/goals/${id}/today/regenerate`, { reason });
+      const result = await api.post(`/goals/${id}/today/regenerate`, { reason });
+      // The old day's tasks (and their reminders) no longer exist — cancel
+      // the native notifications the server just cleared from task_completions
+      await Promise.all((result.cleared_notification_ids || []).map(cancelTaskReminder));
       await load();
     } catch (e) { setError(e.message); }
     finally { setRegenLoading(false); }

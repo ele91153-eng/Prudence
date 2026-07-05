@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../utils/api.js';
+import { cancelTaskReminder, scheduleTaskReminder } from '../utils/localNotifications.js';
 
 function EditSheet({ task, dayId, goalId, onSave, onCancel }) {
   const [form, setForm] = useState({
@@ -17,6 +18,18 @@ function EditSheet({ task, dayId, goalId, onSave, onCancel }) {
     setSaving(true); setError(null);
     try {
       await api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/edit`, form);
+
+      // Time changed — cancel the stale reminder and reschedule for the new time
+      if (form.time !== task.time) {
+        await cancelTaskReminder(task.notification_id);
+        const result = await scheduleTaskReminder({
+          dayId, taskIndex: task.index, title: form.title || task.title, time: form.time, goalId,
+        });
+        await api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/notification`, {
+          notification_id: result.ok ? result.id : null,
+        }).catch(() => {});
+      }
+
       onSave();
     } catch (e) { setError(e.message); setSaving(false); }
   }
@@ -70,6 +83,13 @@ export default function TaskItem({ task, dayId, goalId, goalColor, onUpdate }) {
     setLoading(true);
     try {
       await api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/status`, { status });
+
+      // Task no longer pending — cancel its reminder if one was scheduled
+      if ((status === 'done' || status === 'skipped') && task.notification_id) {
+        await cancelTaskReminder(task.notification_id);
+        api.post(`/goals/${goalId}/tasks/${dayId}/${task.index}/notification`, { notification_id: null }).catch(() => {});
+      }
+
       onUpdate?.();
     } finally { setLoading(false); }
   }
